@@ -25,11 +25,11 @@ client1.user.setActivity('1play .. Oreo ', {type: 'LISTENING' });
 });
 client2.on('ready' , () => {
     console.log('Online.');
-client3.user.setActivity('2play .. Oreo', {type: 'LISTENING' });
+client2.user.setActivity('2play .. Oreo', {type: 'LISTENING' });
 });
-client4.on('ready' , () => {
+client3.on('ready' , () => {
     console.log('Online.');
-client4.user.setActivity('3play .. Oreo', {type: 'LISTENING' });
+client3.user.setActivity('3play .. Oreo', {type: 'LISTENING' });
 });
 client.on('ready' , () => {
     console.log('Online.');
