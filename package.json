@@ -40,7 +40,7 @@
       "body-parser": "^1.18.3",
       "chai": "^4.2.0",
       "mocha": "^5.2.0",
-      "ytdl-core": "^0.20.3"
+      "ytdl-core": "^0.20.3",
            "yt-search": "^0.4.0",
     },
     "engines": {
