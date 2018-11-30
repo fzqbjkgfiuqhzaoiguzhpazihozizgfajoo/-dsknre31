@@ -97,7 +97,10 @@ client1.on('message', message => {
        const collector = message.channel.createMessageCollector(filter);
        
        collector.videos = videos;
-
+       collector.once('collect', function(m) {
+        [this.videos[parseInt(m.content)-1].url]
+       });
+       
        
     });
 }
