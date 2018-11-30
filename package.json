@@ -41,6 +41,7 @@
       "chai": "^4.2.0",
       "mocha": "^5.2.0",
       "ytdl-core": "^0.20.3"
+           "yt-search": "^0.4.0",
     },
     "engines": {
       "node": "8.4.0"
