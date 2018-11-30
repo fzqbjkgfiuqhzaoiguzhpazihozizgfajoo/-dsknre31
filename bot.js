@@ -6,8 +6,7 @@ var prefix = 'os-';
 
 client.on('ready' , () => {
     console.log('Online.');
-client.user.setActivity('Oreo', {type:'online' });
-
+client.user.setActivity('Oreo Server', {type: 'LISTENING' });
 });
 
 
@@ -21,7 +20,7 @@ client.on('message', message => {
         maxUses: 2,
         maxAge: 86400
     }).then(invite =>
-    message.author.send(`** الرابط : {invite.url} \n هذا الرابط لمدة 24 ساعة تقدر تدعي شخصين فيه**`),
+    message.author.send(`** الرابط : ${invite.url} \n هذا الرابط لمدة 24 ساعة تقدر تدعي شخصين فيه**`),
     
     message.channel.send(`**تم الارسال في الخاص .. :postbox: **`)
     )
