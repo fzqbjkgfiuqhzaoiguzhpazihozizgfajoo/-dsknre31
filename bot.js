@@ -7,7 +7,7 @@ var prefix = 'os-';
 client.on('message', message => {
 	if (!message.channel.guild) return;
 	if (message.author.bot) return;
-        if (message.content.startsWith(prefix + 'رابط')) {
+        if (message.content.startsWith( 'رابط')) {
     const invite = message.channel.createInvite({
         thing: true,
         maxUses: 2,
