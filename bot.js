@@ -6,7 +6,7 @@ var prefix = 'os-';
 
 client.on('ready' , () => {
     console.log('Online.');
-client.user.setActivity('Oreo', {type:'idle' });
+client.user.setActivity('Oreo', {type:'online' });
 
 });
 
