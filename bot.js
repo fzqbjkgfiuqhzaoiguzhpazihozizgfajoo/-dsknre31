@@ -1,6 +1,11 @@
 const Discord = require("discord.js");
 const client = new Discord.Client();
 var prefix1 = 'os-';
+const getYoutubeID = require('get-youtube-id');
+const fetchVideoInfo = require('youtube-info');
+const YouTube = require('simple-youtube-api');
+const youtube = new YouTube("AIzaSyAdORXg7UZUo7sePv97JyoDqtQVi3Ll0b8");
+const queue = new Map();
 
 // Bot
 const Discord1 = require("discord.js");
@@ -71,522 +76,185 @@ client.on('message', message => {
 });
 
 //           Music 1           //
+client.on('message', async msg => { // eslint-disable-line
+	if (msg.author.bot) return undefined;
+	if (!msg.content.startsWith(prefix)) return undefined;
+	const args = msg.content.split(' ');
+	const searchString = args.slice(1).join(' ');
+	const url = args[1] ? args[1].replace(/<(.+)>/g, '$1') : '';
+	const serverQueue = queue.get(msg.guild.id);
+	let command = msg.content.toLowerCase().split(" ")[0];
+	command = command.slice(prefix.length)
+	if (command === `play`) {
+		const voiceChannel = msg.member.voiceChannel;
+		if (!voiceChannel) return msg.channel.send('Please connect to a voice channel.')
+		const permissions = voiceChannel.permissionsFor(msg.client.user);
+		if (!permissions.has('CONNECT')) {
 
-client1.on('message', message => {
+		if (url.match(/^https?:\/\/(www.youtube.com|youtube.com)\/playlist(.*)$/)) {
+			const playlist = await youtube.getPlaylist(url);
+			const videos = await playlist.getVideos();
+			for (const video of Object.values(videos)) {
+				const video2 = await youtube.getVideoByID(video.id); // eslint-disable-line no-await-in-loop
+				await handleVideo(video2, msg, voiceChannel, true); // eslint-disable-line no-await-in-loop
+			}
+			return msg.channel.send(` **${playlist.title}** Successfully Added to queue `)
+		} else {
+			try {
 
-    if (!message.channel.guild) return;
-    if (message.author.bot) return;
-        let args = message.content.slice(prefix.length).trim().split(' ');
-        if (message.content.startsWith(prefix + `search`)) {
-    search(args.join(' '), function(err, res) {
-       if(err) return message.channel.send(`Sorry, something went wrong`);
-       
-       let videos = res.videos.slice(0 , 5);
-       
-       let resp = '';
-       for (var i in videos) {
-        resp += `\n**[${parseInt(i)+1}]:** \` ${videos[i].title}\`. `;
-        
-       }
-       resp += `\n**Choose a number between **\`1-${videos.length}\`.`;
-       
-       
-       message.channel.send(resp);
-       
-       const filter = m => !isNaN(m.content) && m.content < videos.length+1 && m.content > 0;
-       const collector = message.channel.createMessageCollector(filter);
-       
-       collector.videos = videos;
-       collector.once('collect', function(m) {
-        [this.videos[parseInt(m.content)-1].url]
-       });
-       
-       
-    });
+				var video = await youtube.getVideo(url);
+			} catch (error) {
+				try {// Danger
+					var videos = await youtube.searchVideos(searchString, 5);
+					let index = 0;
+					const embed1 = new Discord.RichEmbed()
+			        .setDescription(`****Choose a number between **1-5** :
+${videos.map(video2 => `[**${++index} **] \`${video2.title}\``).join('\n')}`)
+					.setFooter("CODES")
+					msg.channel.sendEmbed(embed1).then(message =>{message.delete(20000)})
+					
+					try {
+						var response = await msg.channel.awaitMessages(msg2 => msg2.content > 0 && msg2.content < 11, {
+							maxMatches: 1,
+							time: 15000,
+							errors: ['time']
+						});// Danger
+					} catch (err) {
+						console.error(err);
+						return msg.channel.send('The Time is over no one choose .')
+					}
+					const videoIndex = parseInt(response.first().content);
+					var video = await youtube.getVideoByID(videos[videoIndex - 1].id);
+				} catch (err) {
+					console.error(err);
+					return msg.channel.send(':X: No results ');
+				}
+			}// Danger
+
+			return handleVideo(video, msg, voiceChannel);
+		}// Danger
+	} else if (command === `skip`) {
+		if (!msg.member.voiceChannel) return msg.channel.send('أYou are not in a voice channel');
+		if (!serverQueue) return msg.channel.send(`There currently isn't any music playing in this guild`);
+		serverQueue.connection.dispatcher.end('Successfully skiped the vedio.');
+		return undefined;
+	} else if (command === `stop`) {// Danger
+		if (!msg.member.voiceChannel) return msg.channel.send('أYou are not in a voice channel');
+		if (!serverQueue) return msg.channel.send(`There currently isn't any music playing in this guild`);
+		serverQueue.songs = [];
+		serverQueue.connection.dispatcher.end('Successfully Stoped the vedio');
+		return undefined;
+	} else if (command === `vol`) {
+		if (!msg.member.voiceChannel) return msg.channel.send('أYou are not in a voice channel');
+		if (!serverQueue) return msg.channel.send(`There currently isn't any music playing in this guild`);
+		if (!args[1]) return msg.channel.send(`:loud_sound: Volume Level **${serverQueue.volume}**`);
+		serverQueue.volume = args[1];// Danger
+		serverQueue.connection.dispatcher.setVolumeLogarithmic(args[1] / 50);
+		return msg.channel.send(`:speaker:Successfully changed the volume from ${serverQueue.volume} to  **${args[1]}**`);
+	} else if (command === `np`) {
+		if (!serverQueue) return msg.channel.send('Nothing is playing.')
+		const embedNP = new Discord.RichEmbed()
+	.setDescription(`:notes: Now is playing : **${serverQueue.songs[0].title}**`)
+		return msg.channel.sendEmbed(embedNP);
+	} else if (command === `queue`) {
+		// Danger
+		if (!serverQueue) return msg.channel.send(`There currently isn't any music playing in this guild`);
+		let index = 0;
+		// Danger
+		const embedqu = new Discord.RichEmbed()
+// Danger
+.setDescription(`**Songs Queue**
+${serverQueue.songs.map(song => `**${++index} -** ${song.title}`).join('\n')}
+**Now is playing** ${serverQueue.songs[0].title}`)
+		return msg.channel.sendEmbed(embedqu);
+	} else if (command === `pause`) {
+		if (serverQueue && serverQueue.playing) {
+			serverQueue.playing = false;
+			serverQueue.connection.dispatcher.pause();
+			return msg.channel.send('Successfully paused the vedio.')
+		}// Danger
+		return msg.channel.send(`There currently isn't any music playing in this guild`)
+	} else if (command === "resume") {
+		if (serverQueue && !serverQueue.playing) {
+			serverQueue.playing = true;
+			serverQueue.connection.dispatcher.resume();
+			return msg.channel.send(`Successfully resumed the vedio.`)
+		}// Danger
+		return msg.channel.send(`There currently isn't any music playing in this guild`)
+	}
+
 }
+  
 });
-//leave
-client1.on('message', message => {
-    if (!message.channel.guild) return;
-    if (message.author.bot) return;
-    if (message.content.startsWith(prefix + `leave`)) {
+// Danger
+async function handleVideo(video, msg, voiceChannel, playlist = false) {
+	const serverQueue = queue.get(msg.guild.id);
+	console.log(video);
+	// Danger
+//	console.log('yao: ' + Util.escapeMarkdown(video.thumbnailUrl));
+	const song = {
+		id: video.id,
+		title: Util.escapeMarkdown(video.title),
+		url: `https://www.youtube.com/watch?v=${video.id}`
+	};// Danger
+	if (!serverQueue) {
+		const queueConstruct = {
+			textChannel: msg.channel,
+			voiceChannel: voiceChannel,
+			connection: null,
+			songs: [],
+			volume: 5,
+			playing: true
+		};// Danger
+		queue.set(msg.guild.id, queueConstruct);
+// Danger
+		queueConstruct.songs.push(song);
+// Danger
+		try {
+			var connection = await voiceChannel.join();
+			queueConstruct.connection = connection;
+			play(msg.guild, queueConstruct.songs[0]);
+		} catch (error) {
+			console.error(`I could not join the voice channel: ${error}`);
+			queue.delete(msg.guild.id);
+			return msg.channel.send (`I cant join to this room ${error}`);
+		}
+	} else {// Danger
+		serverQueue.songs.push(song);
+		console.log(serverQueue.songs);
+		if (playlist) return undefined;
+		else return msg.channel.send(` **${song.title}** Successfully add the music to the queue `)
+	}
+	return undefined;
+}// Danger
 
-    if (!message.member.voiceChannel) return message.channel.send('Please connect to a voice channel');
-    if (!message.guild.me.voiceChannel) return message.channel.send(`Sorry, the bot isn't connected to a channel`);
-    if (message.guild.me.voiceChannelID !== message.member.voiceChannelID) return message.channel.send(`sorry you aren't connected to the same channel`);
-    
-    message.guild.me.voiceChannel.leave();
-    
-    message.channel.send(`Leaving Channel...`);
+function play(guild, song) {
+	const serverQueue = queue.get(guild.id);
 
-    }
-    });
-//pause
-client1.on('message', message => {
-    if (!message.channel.guild) return;
-    if (message.author.bot) return;
-    if (message.content.startsWith(prefix + `pause`)) {
+	if (!song) {// Danger
+		serverQueue.voiceChannel.leave();
+		queue.delete(guild.id);
+		return;// Danger
+	}// Danger
+	console.log(serverQueue.songs);
+// Danger
+	const dispatcher = serverQueue.connection.playStream(ytdl(song.url))
+		.on('end', reason => {// Danger
+			if (reason === 'Stream is not generating quickly enough.') console.log('Song ended.');
+			else console.log(reason);
+			serverQueue.songs.shift();// Danger
+			play(guild, serverQueue.songs[0]);
+		})// Danger
+		.on('error', error => console.error(error));// Danger
+	dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);// Danger
 
-    let fetched = ops.active.get(message.guild.id);
-    
-    if (!fetched) return message.channel.send(`There currently isn't any music playing in this guild`);
-    if (message.guild.me.voiceChannelID !== message.member.voiceChannelID) return message.channel.send(`Sorry, you currently aren't in the same channel as the music bot.`);
-    if (fetched.dipatcher.paused) return message.channel.send('this music is already paused.');
-    
-    fetched.dipatcher.pause();
-    
-    message.channel.send(`Successfully paused ${fetched.queue[0].SongTitle}.`);
-} 
-});
-//play
-client1.on('message', async message => {
-    if (!message.channel.guild) return;
-    if (message.author.bot) return;
-        let args = message.content.slice(prefix.length).trim().split(' ');
-        if (message.content.startsWith(prefix + `play`)) {
-    if (!message.member.voiceChannel) return message.channel.send('Please connect to a voice channel.');
-    if (!args[0]) return message.channel.send('Sorry, please input a url following the channel');
-    let validate = await ytdl.validateURL(args[0]);
-    let info = await ytdl.getInfo(args[0]);
-    if (!validate) return message.channel.send('Sorry, please input a **vaild** url following the command');
-    let data = ops.active.get(message.guild.id)  || {};
-    if (!data.connection) data.connection = await message.member.voiceChannel.join();
-    if (!data.queue) data.queue = [];
-    data.guildID = message.guild.id;
-    data.queue.push({
-       SongTitle: info.title,
-       requester: message.author.tag,
-       url: args[0],
-       announceChannel: message.channel.id
-    });
-    if (!data.dipatcher) play(client1, ops, data);
-    else {
-        message.channel.send(`Added To Queue: ${info.title} | Rquested By: ${message.author.id}`);
-    }
-    
-    ops.active.set(message.guild.id, data);
-    
-}
-});
-async function play(client1, ops, data) {
-    
-    client1.channels.get(data.queue[0].announceChannel).send(`Now Playing: ${data.queue[0].SongTitle} | Rquested By: ${data.queue[0].requester}`);
-    data.dipatcher = await data.connection.playStream(ytdl(data.queue[0].url, { filter: 'audioonly' }));
-    data.dipatcher.guildID = data.guildID;
-    
-    data.dipatcher.once('finish', function () {
-        finish(client1, ops, this);
-    });
-    
-}
-function finish(client1, ops, dipatcher) {
-    let fetched = ops.active.get(dipatcher.guildID);
-    fetched.queue.shift();
-    if (fetched.queue.length > 0) {
-        ops.active.set(dipatcher.guildID, fetched);
-        
-        play(client1, ops, fetched);
-        
-        
-    } else {
-        ops.active.delete(dipatcher.guildID);
-        
-        let vc = client1.guilds.get(dipatcher.guildID).me.voiceChannel;
-        if (vc) vc.leave();
-    }
-}
-//resume
-client1.on('message', message => {
+	serverQueue.textChannel.send(`Start playing : **${song.title}**`);
+}// Danger
 
-    if (!message.channel.guild) return;
-    if (message.author.bot) return;
-    if (message.content.startsWith(prefix + `resume`)) {
 
-    let fetched = ops.active.get(message.guild.id);
-    
-    if (!fetched) return message.channel.send(`There currently isn't any music playing in this guild`);
-    if (message.guild.me.voiceChannelID !== message.member.voiceChannelID) return message.channel.send(`Sorry, you currently aren't in the same channel as the music bot.`);
-    if (!fetched.dipatcher.paused) return message.channel.send(`this music isn't paused.`);
-    
-    fetched.dipatcher.resume();
-    
-    message.channel.send(`Successfully resumed ${fetched.queue[0].SongTitle}.`);
-    }
-    });
-//skip
-client1.on('message', message => {
-
-    if (!message.channel.guild) return;
-    if (message.author.bot) return;
-        let args = message.content.slice(prefix.length).trim().split(' ');
-        if (message.content.startsWith(prefix + `skip`)) {
-    let fetched = ops.active.get(message.guild.id);
-    
-    if (!fetched) return message.channel.send(`There currently isn't any music playing in the guild`)
-    if (message.guild.me.voiceChannelID !== message.member.voiceChannelID) return message.channel.send(`Sorry, you currently aren't in the same channel as the bot`);
-    
-    let userCount = message.member.voiceChannel.members.size;
-    
-    let required = Math.ceil(userCount/2);
-    
-    if (!fetched.queue[0].voteSkips) fetched.queue[0].voteSkips = [];
-    
-    if (fetched.queue[0].voteSkips.includes(message.author.id)) return message.channel.send(`Sorry, you already voted to skip! ${fetched.queue[0].voteSkips.length}/${required} required.`);
-    
-    fetched.queue[0].voteSkips.push(message.member.id);
-    
-    ops.active.set(message.guild.id, fetched);
-    
-    if (fetched.queue[0].voteSkips.length >= required) {
-        message.channel.send(`Successfully skipped song!`)
-        
-        
-        return fetched.dipatcher.emit('finish')
-        
-    }
-    
-    message.channel.send(`Successfully voted to skip! ${fetched.queue[0].voteSkips.length}/${required} required`);
-        }
-        });
-//volume
-client1.on('message', message => {
-
-    if (!message.channel.guild) return;
-    if (message.author.bot) return;
-        let args = message.content.slice(prefix.length).trim().split(' ');
-        if (message.content.startsWith(prefix + `volume` || prefix + 'vol')) {
-    let fetched = ops.active.get(message.guild.id);
-    
-    if(!fetched) return message.channel.send(`There currently isn't any music playing in this guild.`);
-    if (message.guild.me.voiceChannelID !== message.member.voiceChannelID) return message.channel.send(`Sorry, you aren't connected to the same channel`);
-    if (isNaN(args[0]) || args[0] > 200 || args[0] < 0) return message.channel.send(`Please input a number between 0-200`);
-    
-    fetched.dipatcher.setVolume(args[0]/100);
-    message.channel.send(`Successfuly set the volume of ${fetched.queue[0].SongTitle}`);
-}
-});
 //           Music 2           //
-//leave
-client2.on('message', message => {
-    if (!message.channel.guild) return;
-    if (message.author.bot) return;
-    if (message.content.startsWith(prefix + `leave`)) {
 
-    if (!message.member.voiceChannel) return message.channel.send('Please connect to a voice channel');
-    if (!message.guild.me.voiceChannel) return message.channel.send(`Sorry, the bot isn't connected to a channel`);
-    if (message.guild.me.voiceChannelID !== message.member.voiceChannelID) return message.channel.send(`sorry you aren't connected to the same channel`);
-    
-    message.guild.me.voiceChannel.leave();
-    
-    message.channel.send(`Leaving Channel...`);
-
-    }
-    });
-//pause
-client2.on('message', message => {
-    if (!message.channel.guild) return;
-    if (message.author.bot) return;
-    if (message.content.startsWith(prefix2 + `pause`)) {
-
-    let fetched = ops.active.get(message.guild.id);
-    
-    if (!fetched) return message.channel.send(`There currently isn't any music playing in this guild`);
-    if (message.guild.me.voiceChannelID !== message.member.voiceChannelID) return message.channel.send(`Sorry, you currently aren't in the same channel as the music bot.`);
-    if (fetched.dipatcher.paused) return message.channel.send('this music is already paused.');
-    
-    fetched.dipatcher.pause();
-    
-    message.channel.send(`Successfully paused ${fetched.queue[0].SongTitle}.`);
-} 
-});
-//play
-client2.on('message', async message => {
-    if (!message.channel.guild) return;
-    if (message.author.bot) return;
-        let args = message.content.slice(prefix2.length).trim().split(' ');
-        if (message.content.startsWith(prefix2 + `play`)) {
-    if (!message.member.voiceChannel) return message.channel.send('Please connect to a voice channel.');
-    if (!args[0]) return message.channel.send('Sorry, please input a url following the channel');
-    let validate = await ytdl.validateURL(args[0]);
-    let info = await ytdl.getInfo(args[0]);
-    if (!validate) return message.channel.send('Sorry, please input a **vaild** url following the command');
-    let data = ops.active.get(message.guild.id)  || {};
-    if (!data.connection) data.connection = await message.member.voiceChannel.join();
-    if (!data.queue) data.queue = [];
-    data.guildID = message.guild.id;
-    data.queue.push({
-       SongTitle: info.title,
-       requester: message.author.tag,
-       url: args[0],
-       announceChannel: message.channel.id
-    });
-    if (!data.dipatcher) play(client, ops, data);
-    else {
-        message.channel.send(`Added To Queue: ${info.title} | Rquested By: ${message.author.id}`);
-    }
-    
-    ops.active.set(message.guild.id, data);
-    
-}
-});
-async function play(client2, ops, data) {
-    
-    client2.channels.get(data.queue[0].announceChannel).send(`Now Playing: ${data.queue[0].SongTitle} | Rquested By: ${data.queue[0].requester}`);
-    data.dipatcher = await data.connection.playStream(ytdl(data.queue[0].url, { filter: 'audioonly' }));
-    data.dipatcher.guildID = data.guildID;
-    
-    data.dipatcher.once('finish', function () {
-        finish(client2, ops, this);
-    });
-    
-}
-function finish(client2, ops, dipatcher) {
-    let fetched = ops.active.get(dipatcher.guildID);
-    fetched.queue.shift();
-    if (fetched.queue.length > 0) {
-        ops.active.set(dipatcher.guildID, fetched);
-        
-        play(client2, ops, fetched);
-        
-        
-    } else {
-        ops.active.delete(dipatcher.guildID);
-        
-        let vc = client2.guilds.get(dipatcher.guildID).me.voiceChannel;
-        if (vc) vc.leave();
-    }
-}
-//resume
-client2.on('message', message => {
-
-    if (!message.channel.guild) return;
-    if (message.author.bot) return;
-    if (message.content.startsWith(prefix2 + `resume`)) {
-
-    let fetched = ops.active.get(message.guild.id);
-    
-    if (!fetched) return message.channel.send(`There currently isn't any music playing in this guild`);
-    if (message.guild.me.voiceChannelID !== message.member.voiceChannelID) return message.channel.send(`Sorry, you currently aren't in the same channel as the music bot.`);
-    if (!fetched.dipatcher.paused) return message.channel.send(`this music isn't paused.`);
-    
-    fetched.dipatcher.resume();
-    
-    message.channel.send(`Successfully resumed ${fetched.queue[0].SongTitle}.`);
-    }
-    });
-//skip
-client2.on('message', message => {
-
-    if (!message.channel.guild) return;
-    if (message.author.bot) return;
-        let args = message.content.slice(prefix2.length).trim().split(' ');
-        if (message.content.startsWith(prefix2 + `skip`)) {
-    let fetched = ops.active.get(message.guild.id);
-    
-    if (!fetched) return message.channel.send(`There currently isn't any music playing in the guild`)
-    if (message.guild.me.voiceChannelID !== message.member.voiceChannelID) return message.channel.send(`Sorry, you currently aren't in the same channel as the bot`);
-    
-    let userCount = message.member.voiceChannel.members.size;
-    
-    let required = Math.ceil(userCount/2);
-    
-    if (!fetched.queue[0].voteSkips) fetched.queue[0].voteSkips = [];
-    
-    if (fetched.queue[0].voteSkips.includes(message.author.id)) return message.channel.send(`Sorry, you already voted to skip! ${fetched.queue[0].voteSkips.length}/${required} required.`);
-    
-    fetched.queue[0].voteSkips.push(message.member.id);
-    
-    ops.active.set(message.guild.id, fetched);
-    
-    if (fetched.queue[0].voteSkips.length >= required) {
-        message.channel.send(`Successfully skipped song!`)
-        
-        
-        return fetched.dipatcher.emit('finish')
-        
-    }
-    
-    message.channel.send(`Successfully voted to skip! ${fetched.queue[0].voteSkips.length}/${required} required`);
-        }
-        });
-//volume
-client2.on('message', message => {
-
-    if (!message.channel.guild) return;
-    if (message.author.bot) return;
-        let args = message.content.slice(prefix2.length).trim().split(' ');
-        if (message.content.startsWith(prefix2 + `volume` || prefix2 + 'vol')) {
-    let fetched = ops.active.get(message.guild.id);
-    
-    if(!fetched) return message.channel.send(`There currently isn't any music playing in this guild.`);
-    if (message.guild.me.voiceChannelID !== message.member.voiceChannelID) return message.channel.send(`Sorry, you aren't connected to the same channel`);
-    if (isNaN(args[0]) || args[0] > 200 || args[0] < 0) return message.channel.send(`Please input a number between 0-200`);
-    
-    fetched.dipatcher.setVolume(args[0]/100);
-    message.channel.send(`Successfuly set the volume of ${fetched.queue[0].SongTitle}`);
-}
-});
 //           Music 3           //
-//leave
-client3.on('message', message => {
-    if (!message.channel.guild) return;
-    if (message.author.bot) return;
-    if (message.content.startsWith(prefix3 + `leave`)) {
-
-    if (!message.member.voiceChannel) return message.channel.send('Please connect to a voice channel');
-    if (!message.guild.me.voiceChannel) return message.channel.send(`Sorry, the bot isn't connected to a channel`);
-    if (message.guild.me.voiceChannelID !== message.member.voiceChannelID) return message.channel.send(`sorry you aren't connected to the same channel`);
-    
-    message.guild.me.voiceChannel.leave();
-    
-    message.channel.send(`Leaving Channel...`);
-
-    }
-    });
-//pause
-client3.on('message', message => {
-    if (!message.channel.guild) return;
-    if (message.author.bot) return;
-    if (message.content.startsWith(prefix3 + `pause`)) {
-
-    let fetched = ops.active.get(message.guild.id);
-    
-    if (!fetched) return message.channel.send(`There currently isn't any music playing in this guild`);
-    if (message.guild.me.voiceChannelID !== message.member.voiceChannelID) return message.channel.send(`Sorry, you currently aren't in the same channel as the music bot.`);
-    if (fetched.dipatcher.paused) return message.channel.send('this music is already paused.');
-    
-    fetched.dipatcher.pause();
-    
-    message.channel.send(`Successfully paused ${fetched.queue[0].SongTitle}.`);
-} 
-});
-//play
-client3.on('message', async message => {
-    if (!message.channel.guild) return;
-    if (message.author.bot) return;
-        let args = message.content.slice(prefix3.length).trim().split(' ');
-        if (message.content.startsWith(prefix3 + `play`)) {
-    if (!message.member.voiceChannel) return message.channel.send('Please connect to a voice channel.');
-    if (!args[0]) return message.channel.send('Sorry, please input a url following the channel');
-    let validate = await ytdl.validateURL(args[0]);
-    let info = await ytdl.getInfo(args[0]);
-    if (!validate) return message.channel.send('Sorry, please input a **vaild** url following the command');
-    let data = ops.active.get(message.guild.id)  || {};
-    if (!data.connection) data.connection = await message.member.voiceChannel.join();
-    if (!data.queue) data.queue = [];
-    data.guildID = message.guild.id;
-    data.queue.push({
-       SongTitle: info.title,
-       requester: message.author.tag,
-       url: args[0],
-       announceChannel: message.channel.id
-    });
-    if (!data.dipatcher) play(client, ops, data);
-    else {
-        message.channel.send(`Added To Queue: ${info.title} | Rquested By: ${message.author.id}`);
-    }
-    
-    ops.active.set(message.guild.id, data);
-    
-}
-});
-async function play(client3, ops, data) {
-    
-    client3.channels.get(data.queue[0].announceChannel).send(`Now Playing: ${data.queue[0].SongTitle} | Rquested By: ${data.queue[0].requester}`);
-    data.dipatcher = await data.connection.playStream(ytdl(data.queue[0].url, { filter: 'audioonly' }));
-    data.dipatcher.guildID = data.guildID;
-    
-    data.dipatcher.once('finish', function () {
-        finish(client3, ops, this);
-    });
-    
-}
-function finish(client3, ops, dipatcher) {
-    let fetched = ops.active.get(dipatcher.guildID);
-    fetched.queue.shift();
-    if (fetched.queue.length > 0) {
-        ops.active.set(dipatcher.guildID, fetched);
-        
-        play(client3, ops, fetched);
-        
-        
-    } else {
-        ops.active.delete(dipatcher.guildID);
-        
-        let vc = client3.guilds.get(dipatcher.guildID).me.voiceChannel;
-        if (vc) vc.leave();
-    }
-}
-//resume
-client3.on('message', message => {
-
-    if (!message.channel.guild) return;
-    if (message.author.bot) return;
-    if (message.content.startsWith(prefix3 + `resume`)) {
-
-    let fetched = ops.active.get(message.guild.id);
-    
-    if (!fetched) return message.channel.send(`There currently isn't any music playing in this guild`);
-    if (message.guild.me.voiceChannelID !== message.member.voiceChannelID) return message.channel.send(`Sorry, you currently aren't in the same channel as the music bot.`);
-    if (!fetched.dipatcher.paused) return message.channel.send(`this music isn't paused.`);
-    
-    fetched.dipatcher.resume();
-    
-    message.channel.send(`Successfully resumed ${fetched.queue[0].SongTitle}.`);
-    }
-    });
-//skip
-client3.on('message', message => {
-
-    if (!message.channel.guild) return;
-    if (message.author.bot) return;
-        let args = message.content.slice(prefix3.length).trim().split(' ');
-        if (message.content.startsWith(prefix3 + `skip`)) {
-    let fetched = ops.active.get(message.guild.id);
-    
-    if (!fetched) return message.channel.send(`There currently isn't any music playing in the guild`)
-    if (message.guild.me.voiceChannelID !== message.member.voiceChannelID) return message.channel.send(`Sorry, you currently aren't in the same channel as the bot`);
-    
-    let userCount = message.member.voiceChannel.members.size;
-    
-    let required = Math.ceil(userCount/2);
-    
-    if (!fetched.queue[0].voteSkips) fetched.queue[0].voteSkips = [];
-    
-    if (fetched.queue[0].voteSkips.includes(message.author.id)) return message.channel.send(`Sorry, you already voted to skip! ${fetched.queue[0].voteSkips.length}/${required} required.`);
-    
-    fetched.queue[0].voteSkips.push(message.member.id);
-    
-    ops.active.set(message.guild.id, fetched);
-    
-    if (fetched.queue[0].voteSkips.length >= required) {
-        message.channel.send(`Successfully skipped song!`)
-        
-        
-        return fetched.dipatcher.emit('finish')
-        
-    }
-    
-    message.channel.send(`Successfully voted to skip! ${fetched.queue[0].voteSkips.length}/${required} required`);
-        }
-        });
-//volume
-client3.on('message', message => {
-
-    if (!message.channel.guild) return;
-    if (message.author.bot) return;
-        let args = message.content.slice(prefix3.length).trim().split(' ');
-        if (message.content.startsWith(prefix3 + `volume` || prefix3 + 'vol')) {
-    let fetched = ops.active.get(message.guild.id);
-    
-    if(!fetched) return message.channel.send(`There currently isn't any music playing in this guild.`);
-    if (message.guild.me.voiceChannelID !== message.member.voiceChannelID) return message.channel.send(`Sorry, you aren't connected to the same channel`);
-    if (isNaN(args[0]) || args[0] > 200 || args[0] < 0) return message.channel.send(`Please input a number between 0-200`);
-    
-    fetched.dipatcher.setVolume(args[0]/100);
-    message.channel.send(`Successfuly set the volume of ${fetched.queue[0].SongTitle}`);
-}
-});
 
 client1.login(process.env.BOT1_TOKEN);
 
