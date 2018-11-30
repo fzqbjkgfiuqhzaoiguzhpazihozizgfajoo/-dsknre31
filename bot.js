@@ -4,6 +4,14 @@ var prefix = 'os-';
 
 
 
+client.on('ready' , () => {
+    console.log('Online.');
+client.user.setActivity('Oreo', {type:'idle' });
+
+});
+
+
+
 client.on('message', message => {
 	if (!message.channel.guild) return;
 	if (message.author.bot) return;
