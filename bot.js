@@ -15,6 +15,8 @@ const ownerID = '455331653309562910';
 const active = new Map();
 let ops = {ownerID : ownerID,active: active};
 var prefix = '1';
+var prefix2 = '2';
+var prefix3 = '3';
 
 
 client.on('ready' , () => {
@@ -237,7 +239,7 @@ client2.on('message', message => {
 client2.on('message', message => {
     if (!message.channel.guild) return;
     if (message.author.bot) return;
-    if (message.content.startsWith(prefix + `pause`)) {
+    if (message.content.startsWith(prefix2 + `pause`)) {
 
     let fetched = ops.active.get(message.guild.id);
     
@@ -254,8 +256,8 @@ client2.on('message', message => {
 client2.on('message', async message => {
     if (!message.channel.guild) return;
     if (message.author.bot) return;
-        let args = message.content.slice(prefix.length).trim().split(' ');
-        if (message.content.startsWith(prefix + `play`)) {
+        let args = message.content.slice(prefix2.length).trim().split(' ');
+        if (message.content.startsWith(prefix2 + `play`)) {
     if (!message.member.voiceChannel) return message.channel.send('Please connect to a voice channel.');
     if (!args[0]) return message.channel.send('Sorry, please input a url following the channel');
     let validate = await ytdl.validateURL(args[0]);
@@ -312,7 +314,7 @@ client2.on('message', message => {
 
     if (!message.channel.guild) return;
     if (message.author.bot) return;
-    if (message.content.startsWith(prefix + `resume`)) {
+    if (message.content.startsWith(prefix2 + `resume`)) {
 
     let fetched = ops.active.get(message.guild.id);
     
@@ -330,8 +332,8 @@ client2.on('message', message => {
 
     if (!message.channel.guild) return;
     if (message.author.bot) return;
-        let args = message.content.slice(prefix.length).trim().split(' ');
-        if (message.content.startsWith(prefix + `skip`)) {
+        let args = message.content.slice(prefix2.length).trim().split(' ');
+        if (message.content.startsWith(prefix2 + `skip`)) {
     let fetched = ops.active.get(message.guild.id);
     
     if (!fetched) return message.channel.send(`There currently isn't any music playing in the guild`)
@@ -365,8 +367,8 @@ client2.on('message', message => {
 
     if (!message.channel.guild) return;
     if (message.author.bot) return;
-        let args = message.content.slice(prefix.length).trim().split(' ');
-        if (message.content.startsWith(prefix + `volume` || prefix + 'vol')) {
+        let args = message.content.slice(prefix2.length).trim().split(' ');
+        if (message.content.startsWith(prefix2 + `volume` || prefix2 + 'vol')) {
     let fetched = ops.active.get(message.guild.id);
     
     if(!fetched) return message.channel.send(`There currently isn't any music playing in this guild.`);
@@ -382,7 +384,7 @@ client2.on('message', message => {
 client3.on('message', message => {
     if (!message.channel.guild) return;
     if (message.author.bot) return;
-    if (message.content.startsWith(prefix + `leave`)) {
+    if (message.content.startsWith(prefix3 + `leave`)) {
 
     if (!message.member.voiceChannel) return message.channel.send('Please connect to a voice channel');
     if (!message.guild.me.voiceChannel) return message.channel.send(`Sorry, the bot isn't connected to a channel`);
@@ -398,7 +400,7 @@ client3.on('message', message => {
 client3.on('message', message => {
     if (!message.channel.guild) return;
     if (message.author.bot) return;
-    if (message.content.startsWith(prefix + `pause`)) {
+    if (message.content.startsWith(prefix3 + `pause`)) {
 
     let fetched = ops.active.get(message.guild.id);
     
@@ -415,8 +417,8 @@ client3.on('message', message => {
 client3.on('message', async message => {
     if (!message.channel.guild) return;
     if (message.author.bot) return;
-        let args = message.content.slice(prefix.length).trim().split(' ');
-        if (message.content.startsWith(prefix + `play`)) {
+        let args = message.content.slice(prefix3.length).trim().split(' ');
+        if (message.content.startsWith(prefix3 + `play`)) {
     if (!message.member.voiceChannel) return message.channel.send('Please connect to a voice channel.');
     if (!args[0]) return message.channel.send('Sorry, please input a url following the channel');
     let validate = await ytdl.validateURL(args[0]);
@@ -473,7 +475,7 @@ client3.on('message', message => {
 
     if (!message.channel.guild) return;
     if (message.author.bot) return;
-    if (message.content.startsWith(prefix + `resume`)) {
+    if (message.content.startsWith(prefix3 + `resume`)) {
 
     let fetched = ops.active.get(message.guild.id);
     
@@ -491,8 +493,8 @@ client3.on('message', message => {
 
     if (!message.channel.guild) return;
     if (message.author.bot) return;
-        let args = message.content.slice(prefix.length).trim().split(' ');
-        if (message.content.startsWith(prefix + `skip`)) {
+        let args = message.content.slice(prefix3.length).trim().split(' ');
+        if (message.content.startsWith(prefix3 + `skip`)) {
     let fetched = ops.active.get(message.guild.id);
     
     if (!fetched) return message.channel.send(`There currently isn't any music playing in the guild`)
@@ -526,8 +528,8 @@ client3.on('message', message => {
 
     if (!message.channel.guild) return;
     if (message.author.bot) return;
-        let args = message.content.slice(prefix.length).trim().split(' ');
-        if (message.content.startsWith(prefix + `volume` || prefix + 'vol')) {
+        let args = message.content.slice(prefix3.length).trim().split(' ');
+        if (message.content.startsWith(prefix3 + `volume` || prefix3 + 'vol')) {
     let fetched = ops.active.get(message.guild.id);
     
     if(!fetched) return message.channel.send(`There currently isn't any music playing in this guild.`);
