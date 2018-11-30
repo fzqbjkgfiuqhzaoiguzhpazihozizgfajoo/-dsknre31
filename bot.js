@@ -1,6 +1,25 @@
 const Discord = require("discord.js");
 const client = new Discord.Client();
-var prefix = 'os';
+var prefix = 'os-';
+
+
+
+client.on('message', message => {
+	if (!message.channel.guild) return;
+	if (message.author.bot) return;
+        if (message.content.startsWith(prefix + 'رابط')) {
+    const invite = message.channel.createInvite({
+        thing: true,
+        maxUses: 2,
+        maxAge: 86400
+    }).then(invite =>
+    message.author.send(`** الرابط : {invite.url} \n هذا الرابط لمدة 24 ساعة تقدر تدعي شخصين فيه**`),
+    
+    message.channel.send(`**تم الارسال في الخاص .. :postbox: **`)
+    )
+        }    
+});
+
 
 
 client.on('message', message => {
