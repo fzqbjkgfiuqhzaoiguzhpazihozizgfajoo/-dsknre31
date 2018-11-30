@@ -11,7 +11,6 @@ const Discord3 = require("discord.js");
 const client3 = new Discord3.Client();
 
 const ytdl = require("ytdl-core");
-const search = require("yt-search");
 const ownerID = '455331653309562910';
 const active = new Map();
 let ops = {ownerID : ownerID,active: active};
