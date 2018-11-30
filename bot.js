@@ -19,6 +19,18 @@ var prefix2 = '2';
 var prefix3 = '3';
 
 
+client1.on('ready' , () => {
+    console.log('Online.');
+client1.user.setActivity('1play .. Oreo ', {type: 'LISTENING' });
+});
+client2.on('ready' , () => {
+    console.log('Online.');
+client3.user.setActivity('2play .. Oreo', {type: 'LISTENING' });
+});
+client4.on('ready' , () => {
+    console.log('Online.');
+client4.user.setActivity('3play .. Oreo', {type: 'LISTENING' });
+});
 client.on('ready' , () => {
     console.log('Online.');
 client.user.setActivity('Oreo Server', {type: 'LISTENING' });
