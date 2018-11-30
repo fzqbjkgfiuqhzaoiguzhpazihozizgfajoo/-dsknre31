@@ -76,6 +76,7 @@ client.on('message', message => {
 });
 
 //           Music 1           //
+
 client.on('message', async msg => { // eslint-disable-line
 	if (msg.author.bot) return undefined;
 	if (!msg.content.startsWith(prefix)) return undefined;
@@ -85,7 +86,7 @@ client.on('message', async msg => { // eslint-disable-line
 	const serverQueue = queue.get(msg.guild.id);
 	let command = msg.content.toLowerCase().split(" ")[0];
 	command = command.slice(prefix.length)
-	if (command === `play`) {
+        if (msg.content.startsWith(prefix + `play`)) {
 		const voiceChannel = msg.member.voiceChannel;
 		if (!voiceChannel) return msg.channel.send('Please connect to a voice channel.')
 		const permissions = voiceChannel.permissionsFor(msg.client.user);
@@ -133,30 +134,30 @@ ${videos.map(video2 => `[**${++index} **] \`${video2.title}\``).join('\n')}`)
 
 			return handleVideo(video, msg, voiceChannel);
 		}// Danger
-	} else if (command === `skip`) {
+	} else if (msg.content.startsWith(prefix + `skip`)) {
 		if (!msg.member.voiceChannel) return msg.channel.send('أYou are not in a voice channel');
 		if (!serverQueue) return msg.channel.send(`There currently isn't any music playing in this guild`);
 		serverQueue.connection.dispatcher.end('Successfully skiped the vedio.');
 		return undefined;
-	} else if (command === `stop`) {// Danger
+	} else if (msg.content.startsWith(prefix + `stop`)) {
 		if (!msg.member.voiceChannel) return msg.channel.send('أYou are not in a voice channel');
 		if (!serverQueue) return msg.channel.send(`There currently isn't any music playing in this guild`);
 		serverQueue.songs = [];
 		serverQueue.connection.dispatcher.end('Successfully Stoped the vedio');
 		return undefined;
-	} else if (command === `vol`) {
+	} else if (msg.content.startsWith(prefix + `vol` || prefix + `volume`)) {
 		if (!msg.member.voiceChannel) return msg.channel.send('أYou are not in a voice channel');
 		if (!serverQueue) return msg.channel.send(`There currently isn't any music playing in this guild`);
 		if (!args[1]) return msg.channel.send(`:loud_sound: Volume Level **${serverQueue.volume}**`);
 		serverQueue.volume = args[1];// Danger
 		serverQueue.connection.dispatcher.setVolumeLogarithmic(args[1] / 50);
 		return msg.channel.send(`:speaker:Successfully changed the volume from ${serverQueue.volume} to  **${args[1]}**`);
-	} else if (command === `np`) {
+	} else if (msg.content.startsWith(prefix + `np`)) {
 		if (!serverQueue) return msg.channel.send('Nothing is playing.')
 		const embedNP = new Discord.RichEmbed()
 	.setDescription(`:notes: Now is playing : **${serverQueue.songs[0].title}**`)
 		return msg.channel.sendEmbed(embedNP);
-	} else if (command === `queue`) {
+	} else if (msg.content.startsWith(prefix + `queue`)) {
 		// Danger
 		if (!serverQueue) return msg.channel.send(`There currently isn't any music playing in this guild`);
 		let index = 0;
@@ -250,6 +251,8 @@ function play(guild, song) {
 
 	serverQueue.textChannel.send(`Start playing : **${song.title}**`);
 }// Danger
+
+
 
 
 //           Music 2           //
