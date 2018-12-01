@@ -7,36 +7,8 @@ const YouTube = require('simple-youtube-api');
 const youtube = new YouTube("AIzaSyAdORXg7UZUo7sePv97JyoDqtQVi3Ll0b8");
 const queue = new Map();
 
-// Bot
-const Discord1 = require("discord.js");
-const client1 = new Discord1.Client();
-const Discord2 = require("discord.js");
-const client2 = new Discord2.Client();
-const Discord3 = require("discord.js");
-const client3 = new Discord3.Client();
+// Bo
 
-const ytdl = require("ytdl-core");
-const search = require("yt-search");
-const ownerID = '455331653309562910';
-const active = new Map();
-let ops = {ownerID : ownerID,active: active};
-var prefix = '122';
-var prefix2 = '233';
-var prefix3 = '344';
-
-
-client1.on('ready' , () => {
-    console.log('Online.');
-client1.user.setActivity('1play .. Oreo ', {type: 'LISTENING' });
-});
-client2.on('ready' , () => {
-    console.log('Online.');
-client2.user.setActivity('2play .. Oreo', {type: 'LISTENING' });
-});
-client3.on('ready' , () => {
-    console.log('Online.');
-client3.user.setActivity('3play .. Oreo', {type: 'LISTENING' });
-});
 client.on('ready' , () => {
     console.log('Online.');
 client.user.setActivity('Oreo Server', {type: 'LISTENING' });
@@ -84,11 +56,46 @@ client.on('message', message => {
 });
 
 
-client1.login(process.env.BOT1_TOKEN);
 
-client2.login(process.env.BOT2_TOKEN);
+client.on('message', async message => {
+  if(message.content.startsWith(prefix + "voice")) {
+  if(!message.guild.member(message.author).hasPermissions('MANAGE_CHANNELS')) return message.reply(':x: **ليس لديك الصلاحيات الكافية**');
+  if(!message.guild.member(client.user).hasPermissions(['MANAGE_CHANNELS','MANAGE_ROLES_OR_PERMISSIONS'])) return message.reply(':x: **ليس معي الصلاحيات الكافية**');
+  var args = message.content.split(' ').slice(1).join(' ');
+  if(args && !args.includes(0)) return message.channel.send(':negative_squared_cross_mark: » فشل اعداد الروم الصوتي .. __يجب عليك كتابة 0 في اسم الروم__');
+  if(!args) args = `VoiceOnline: [ ${message.guild.members.filter(s => s.voiceChannel).size} ]`;
+  message.channel.send(':white_check_mark: » تم عمل الروم الصوتي بنجاح');
+  message.guild.createChannel(`${args.replace(0, message.guild.members.filter(s => s.voiceChannel).size)}`, 'voice').then(c => {
+    c.overwritePermissions(message.guild.id, {
+      CONNECT: false,
+      SPEAK: false
+    });
+    setInterval(() => {
+      c.setName(`${args.replace(0, message.guild.members.filter(s => s.voiceChannel).size)}`).catch(err => {
+        if(err) return;
+      });
+    },3000);
+  });
+  }
+});
 
-client3.login(process.env.BOT3_TOKEN);
+
+
+client.on('guildMemberAdd', member => {
+	if(datediff(parseDate(moment(member.user.createdTimestamp).format('l')), parseDate(moment().format('l'))) < 1) {
+		member.guild.member(member).ban({ reason: 'Fake account.' })
+		member.guild.channels.find(c => c.id === '').send(`:white_check_mark: | <@${member.id}> Successfully banned. Reason: \`\`Fake account.\`\``);
+	}
+});
+function parseDate(str) {
+	var mdy = str.split('/');
+	return new Date(mdy[2], mdy[0]-1, mdy[1]);
+};
+function datediff(first, second) {
+	return Math.round((second-first)/(1000*60*60*24));
+};
+
+
 
 client.login(process.env.BOT_TOKEN);
 
