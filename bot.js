@@ -62,6 +62,14 @@ client.on('message', message => {
 
 
 
+client.on("guildMemberAdd", (member) => {
+        var guild = client.guilds.find("name", 'Oreo Area ,');
+const channel = guild.channels.find(channel => channel.name == 'oreo');
+         channel.send(`** # Welcome To Our Server :rose: :3_:  **`);
+});
+
+
+
 client.on('message', message => {
 	if (!message.channel.guild) return;
 	if (message.author.bot) return;
