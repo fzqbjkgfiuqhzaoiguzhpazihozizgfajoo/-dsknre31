@@ -67,6 +67,30 @@ client.on('message', message => {
 
 
 
+client.on('message' , message => {
+	if(message.content.startsWith(prefix + 'sug')) {
+    let args = message.content.split(" ").slice(1).join(' ');
+    let sugChannel = message.guild.channels.find(channel => channel.name == 'suggestions');
+    if(!args) return message.channel.send(`**Use : ${prefix}sug [Message]**`);
+    if(!sugChannel) return;
+		let embed = new Discord.RichEmbed();
+		embed.setTitle(`New Suggestion :`);
+		embed.setAuthor(message.guild.name);
+		embed.setThumbnail(message.author.avatarURL);
+		embed.setColor('PURPLE');
+		embed.setDescription(`**
+		From : \n ${message.author.username}
+		Suggestion : \n ${args}
+		**`);
+		embed.setFooter(message.guild.name, message.guild.iconURL);
+		embed.setTimestamp();
+	 message.channel.send(`**Done .. :white_check_mark: **`);
+	sugChannel.send(embed);
+  }
+});
+
+
+
 client.on("guildMemberAdd", (member) => {
         var guild = client.guilds.find("name", 'Oreo Area ,');
 	const channel = guild.channels.find(channel => channel.name == 'oreo');
@@ -130,6 +154,13 @@ function datediff(first, second) {
 
 
 client.on("error", (e)=> console.log(e)); 
+
+
+
+client.on("error", function(err) {
+ return console.log(err);
+});
+
 
 
 client.login(process.env.BOT_TOKEN);
