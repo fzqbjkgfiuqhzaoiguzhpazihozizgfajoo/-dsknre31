@@ -10,6 +10,13 @@ client.user.setActivity('Oreo Server', {type: 'LISTENING' });
 });
 
 
+
+client.on("error", function(err) {
+ return console.log(err);
+});
+
+
+
 const invites = {};
 
 const wait = require('util').promisify(setTimeout);
