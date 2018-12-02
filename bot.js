@@ -1,11 +1,6 @@
 const Discord = require("discord.js");
 const client = new Discord.Client();
 var prefix = 'os-';
-const getYoutubeID = require('get-youtube-id');
-const fetchVideoInfo = require('youtube-info');
-const YouTube = require('simple-youtube-api');
-const youtube = new YouTube("AIzaSyAdORXg7UZUo7sePv97JyoDqtQVi3Ll0b8");
-const queue = new Map();
 const moment = require('moment');
 // Bo
 
@@ -36,7 +31,7 @@ client.on('message', message => {
 
 client.on("guildMemberAdd", (member) => {
         var guild = client.guilds.find("name", 'Oreo Area ,');
-const channel = guild.channels.find(channel => channel.name == 'oreo');
+	const channel = guild.guild.channels.find(channel => channel.name == 'oreo');
          channel.send(`** # Welcome To Our Server :rose: .. **`);
 });
 
@@ -84,7 +79,7 @@ client.on('message', async message => {
 client.on('guildMemberAdd', member => {
 	if(datediff(parseDate(moment(member.user.createdTimestamp).format('l')), parseDate(moment().format('l'))) < 1) {
 		member.guild.member(member).ban({ reason: 'Fake account.' })
-		member.guild.channels.find(c => c.id === '518489270793535508').send(`:white_check_mark: | <@${member.id}> Successfully banned. Reason: \`\`Fake account.\`\``);
+ 		member.guild.channels.find(channel => channel.name == 'ban-logs').send(`:white_check_mark: | <@${member.id}> Successfully banned. Reason: \`\`Fake account.\`\``);
 	}
 });
 function parseDate(str) {
