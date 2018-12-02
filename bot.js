@@ -11,6 +11,20 @@ client.user.setActivity('Oreo Server', {type: 'LISTENING' });
 
 
 
+client.on('guildMemberAdd', member => {
+  member.guild.fetchInvites().then(guildInvites => {
+    const ei = invites[member.guild.id];
+    invites[member.guild.id] = guildInvites;
+    const invite = guildInvites.find(i => ei.get(i.code).uses < i.uses);
+    const inviter = client.users.get(invite.inviter.id);
+    const guild = member.guilds.find(guild => guild.name == 'Oreo Area ,');
+    const logChannel = guild.channels.find(channel => channel.name === "invites-log");
+    logChannel.send(`#:champagne_glass:  :blue_heart:  Welcome to Oreo <@!${member.user.id}> invited by <@!${inviter.id}> (${invite.uses} invites`);
+  });
+});
+
+
+
 client.on('message', message => {
 	if (!message.channel.guild) return;
 	if (message.author.bot) return;
