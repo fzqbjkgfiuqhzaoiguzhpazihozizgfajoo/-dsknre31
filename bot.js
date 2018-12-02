@@ -122,6 +122,8 @@ function datediff(first, second) {
 };
 
 
+client.on("error", (e)=> console.log(e)); 
+
 
 client.login(process.env.BOT_TOKEN);
 
