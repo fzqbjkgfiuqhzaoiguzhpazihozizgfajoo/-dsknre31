@@ -68,6 +68,7 @@ client.on('message', message => {
 
 
 client.on('message' , message => {
+    const prefix = '.';
 	if(message.content.startsWith(prefix + 'sug')) {
     let args = message.content.split(" ").slice(1).join(' ');
     let sugChannel = message.guild.channels.find(channel => channel.name == 'suggestions');
