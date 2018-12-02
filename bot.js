@@ -62,7 +62,7 @@ client.on('message', message => {
 
 client.on("guildMemberAdd", (member) => {
         var guild = client.guilds.find("name", 'Oreo Area ,');
-	const channel = guild.guild.channels.find(channel => channel.name == 'oreo');
+	const channel = guild.channels.find(channel => channel.name == 'oreo');
          channel.send(`** # Welcome To Our Server :rose: .. **`);
 });
 
