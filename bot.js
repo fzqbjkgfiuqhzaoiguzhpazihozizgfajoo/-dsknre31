@@ -2,6 +2,8 @@ const Discord = require("discord.js");
 const client = new Discord.Client();
 var prefix = 'os-';
 const moment = require('moment');
+let sug = JSON.parse(fs.readFileSync(`./sug.json`, `utf8`));
+
 // Bo
 
 client.on('ready' , () => {
@@ -68,27 +70,39 @@ client.on('message', message => {
 
 
 client.on('message' , message => {
-    const prefix = '.';
-	if(message.content.startsWith(prefix + 'sug')) {
-    let args = message.content.split(" ").slice(1).join(' ');
-    let sugChannel = message.guild.channels.find(channel => channel.name == 'suggestions');
-    if(!args) return message.channel.send(`**Use : ${prefix}sug [Message]**`);
-    if(!sugChannel) return;
+	var prefix = '.';
+	if (message.author.bot) return;
+	if (!message.channel.guild) return;
+	let sugC = message.guild.channels.find(channel => channel.name == 'suggestions');
+    if (!message.channel.guild) return;
+    let args = message.content.split(" ").slice(1);
+	if (!sug[message.guild.id]) sug[message.guild.id] = {
+	    	scase: 0,
+    };
+    if (message.content.startsWith(prefix + 'sug')) {
+    if(!args) return message.channel.send(`**Error : You have to write a message .**`);
+        if(!sugC) return;
 		let embed = new Discord.RichEmbed();
 		embed.setTitle(`New Suggestion :`);
 		embed.setAuthor(message.guild.name);
 		embed.setThumbnail(message.author.avatarURL);
 		embed.setColor('PURPLE');
-		embed.setDescription(`**
-		From : \n ${message.author.username}
-		Suggestion : \n ${args}
-		**`);
+		embed.setDescription(`** Suggestion Number : ${sug[message.guild.id].scase+1} ,
+		
+From : \n ${message.author.username}
+
+Suggestion : \n ${args}**`);
 		embed.setFooter(message.guild.name, message.guild.iconURL);
 		embed.setTimestamp();
 	 message.channel.send(`**Done .. :white_check_mark: **`);
-	sugChannel.send(embed);
-  }
+	sugC.send(embed);
+	sug[message.guild.id].scase += 1;
+    }
+    fs.writeFile('./sug.json', JSON.stringify(sug), (err) => {
+    	if (err) console.error(err);
+    });
 });
+
 
 
 
