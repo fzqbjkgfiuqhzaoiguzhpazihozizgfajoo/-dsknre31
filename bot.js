@@ -81,7 +81,7 @@ client.on('message' , message => {
 	    	scase: 0,
     };
     if (message.content.startsWith(prefix + 'sug')) {
-    if(!args) return message.channel.send(`**Error : You have to write a message .**`);
+    if(!args[0]) return message.channel.send(`**Error : You have to write a message .**`);
         if(!sugC) return;
 		let embed = new Discord.RichEmbed();
 		embed.setTitle(`New Suggestion :`);
