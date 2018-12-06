@@ -2,6 +2,7 @@ const Discord = require("discord.js");
 const client = new Discord.Client();
 var prefix = 'os-';
 const moment = require('moment');
+const fs = require("fs");
 let sug = JSON.parse(fs.readFileSync(`./sug.json`, `utf8`));
 
 // Bo
