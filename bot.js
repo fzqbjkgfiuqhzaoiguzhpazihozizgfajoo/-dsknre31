@@ -76,7 +76,7 @@ client.on('message' , message => {
 	if (!message.channel.guild) return;
 	let sugC = message.guild.channels.find(channel => channel.name == 'suggestions');
     if (!message.channel.guild) return;
-    let args = message.content.split(" ").slice(1);
+    let args = message.content.split(" ").slice(1).join(" ");
 	if (!sug[message.guild.id]) sug[message.guild.id] = {
 	    	scase: 0,
     };
