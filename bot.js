@@ -46,7 +46,7 @@ client.on('guildMemberAdd', member => {
     const inviter = client.users.get(invite.inviter.id);
     const guild = client.guilds.find(guild => guild.name == 'Oreo Area ,');
     const logChannel = guild.channels.find(channel => channel.name === "invites-log");
-    logChannel.send(`#:champagne_glass:  :blue_heart:  Welcome to Oreo <@!${member.user.id}> invited by <@!${inviter.id}> (${invite.uses} invites`);
+    logChannel.send(`#:champagne_glass:  :blue_heart:  Welcome to Oreo <@!${member.user.id}> invited by <@!${inviter.id}> (${invite.uses} invites)`);
   });
 });
 
