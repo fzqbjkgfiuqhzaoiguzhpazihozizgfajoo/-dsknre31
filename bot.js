@@ -152,22 +152,21 @@ client.on('message', async message => {
   }
 });
 
-
-
-client.on('guildMemberAdd', member => {
-	if(datediff(parseDate(moment(member.user.createdTimestamp).format('l')), parseDate(moment().format('l'))) < 1) {
-		member.guild.member(member).ban({ reason: 'Fake account.' })
- 		member.guild.channels.find(channel => channel.name == 'ban-logs').send(`:white_check_mark: | <@${member.id}> Successfully banned. Reason: \`\`Fake account.\`\``);
-	}
+client.on("guildMemberAdd", m => {
+    if (datediff(parseDate(moment(m.user.createdTimestamp).format('l')), parseDate(moment().format('l'))) < 15) {
+        m.ban();
+    	member.guild.member(member).ban({ reason: 'Fake account.' })
+	member.guild.channels.find(channel => channel.name == 'ban-logs').send(`:white_check_mark: | <@${member.id}> Successfully banned. Reason: \`\`Fake account.\`\``);
+	};
+    function parseDate(str) {
+        var mdy = str.split('/');
+        return new Date(mdy[2], mdy[0]-1, mdy[1]);
+    };
+    
+    function datediff(first, second) {
+        return Math.round((second-first)/(1000*60*60*24));
+    };
 });
-function parseDate(str) {
-	var mdy = str.split('/');
-	return new Date(mdy[2], mdy[0]-1, mdy[1]);
-};
-function datediff(first, second) {
-	return Math.round((second-first)/(1000*60*60*24));
-};
-
 
 client.on("error", (e)=> console.log(e)); 
 
